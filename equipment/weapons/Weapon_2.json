@@ -1,0 +1,12 @@
+{
+    "name": "fda",
+    "weapon_type": "sceptre",
+    "perk_crit_bonus": "Paralizer, Stunner",
+    "strike": 6,
+    "protection": 0,
+    "defense": 3,
+    "speed": -1,
+    "evade": 0,
+    "block": 6,
+    "damage": 7
+}
