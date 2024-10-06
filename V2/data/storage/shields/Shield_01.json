@@ -1,0 +1,17 @@
+{
+    "type": "shield",
+    "name": "The Shield",
+    "perk": [
+        "stunner",
+        "mover"
+    ],
+    "strike": 5,
+    "prot": 0,
+    "defense": 30,
+    "speed": -2,
+    "evade": -5,
+    "block": 50,
+    "damage": 0,
+    "critical_condition": "strike roll > 50 defense",
+    "total_damage": 78
+}

@@ -15,10 +15,10 @@ class MainWindow:
         self.main_frame = ttk.Frame(self.master)
         self.main_frame.pack(fill=tk.BOTH, expand=1)
         
-        self.create_knight_list()
+        self.create_left_panel()
         self.create_notebook()
-        self.create_general_frame()
-        self.create_knight_buttons()
+        
+        self.create_status_bar()
         
         self.current_knight = None
 
@@ -38,20 +38,28 @@ class MainWindow:
 
         self.ability_editor.bind("<<StatsUpdated>>", lambda e: self.all_statistics.update_display())
 
+    def create_left_panel(self):
+        self.left_panel = ttk.Frame(self.main_frame)
+        self.left_panel.pack(side=tk.LEFT, fill=tk.Y)
+        
+        self.create_knight_list()
+        self.create_knight_buttons()
+
     def create_knight_list(self):
-        self.knight_list = KnightList(self.main_frame, self.data_manager)
-        self.knight_list.pack(side=tk.LEFT, fill=tk.Y)
+        self.knight_list = KnightList(self.left_panel, self.data_manager)
+        self.knight_list.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.knight_list.bind('<<KnightSelected>>', self.on_knight_select)
 
     def create_knight_buttons(self):
-        button_frame = ttk.Frame(self.main_frame)
+        button_frame = ttk.Frame(self.left_panel)
         button_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.new_knight_button = ttk.Button(button_frame, text="New Knight", command=self.new_knight)
-        self.new_knight_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.new_knight_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True, fill=tk.X)
 
         self.delete_knight_button = ttk.Button(button_frame, text="Delete Knight", command=self.delete_knight)
-        self.delete_knight_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.delete_knight_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True, fill=tk.X)
+
 
     def new_knight(self):
         new_knight = self.data_manager.create_new_knight()
@@ -66,15 +74,23 @@ class MainWindow:
                 self.current_knight = None
                 self.update_general_frame()
 
-    def create_general_frame(self):
-        self.general_frame = ttk.Frame(self.main_frame)
-        self.general_frame.pack(side=tk.BOTTOM, fill=tk.X)
+    def create_status_bar(self):
+        self.status_bar = ttk.Frame(self.master)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-        self.current_knight_label = ttk.Label(self.general_frame, text="<No Knight Selected>")
+        self.current_knight_label = ttk.Label(self.status_bar, text="<No Knight Selected>")
         self.current_knight_label.pack(side=tk.LEFT, padx=10)
 
-        self.proceed_button = ttk.Button(self.general_frame, text="Proceed to Action", command=self.proceed_to_action, state=tk.DISABLED)
+        self.proceed_button = ttk.Button(self.status_bar, text="Proceed to Action", command=self.proceed_to_action, state=tk.DISABLED)
         self.proceed_button.pack(side=tk.RIGHT, padx=10)
+
+    def update_status_bar(self):
+        if self.current_knight:
+            self.current_knight_label.config(text=self.current_knight.name)
+            self.proceed_button.config(state=tk.NORMAL)
+        else:
+            self.current_knight_label.config(text="<No Knight Selected>")
+            self.proceed_button.config(state=tk.DISABLED)
 
     def on_knight_select(self, event):
         knight_id = self.knight_list.get_selected_knight_id()
@@ -83,15 +99,7 @@ class MainWindow:
         self.all_statistics.load_knight(self.current_knight)
         self.skill_editor.load_knight(self.current_knight)
         self.weapons_manager.load_knight(self.current_knight)
-        self.update_general_frame()
-
-    def update_general_frame(self):
-        if self.current_knight:
-            self.current_knight_label.config(text=self.current_knight.name)
-            self.proceed_button.config(state=tk.NORMAL)
-        else:
-            self.current_knight_label.config(text="<No Knight Selected>")
-            self.proceed_button.config(state=tk.DISABLED)
+        self.update_status_bar()
 
     def proceed_to_action(self):
         print('You are now on the Action Screen')

@@ -1,0 +1,17 @@
+{
+    "type": "weapon",
+    "name": "Broadsword",
+    "perk": [
+        "bleeder",
+        "mover"
+    ],
+    "strike": 11,
+    "prot": 0,
+    "defense": 10,
+    "speed": -2,
+    "evade": -10,
+    "block": 10,
+    "damage": 20,
+    "critical_condition": "strike roll > 50 defense",
+    "total_damage": 39
+}

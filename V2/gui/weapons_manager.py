@@ -7,8 +7,6 @@ class WeaponsManager(ttk.Frame):
         self.data_manager = data_manager
         self.current_knight = None
         self.treeview_types = {}
-        self.inventory_data = {category: [] for category in ['Weapons', 'Shields', 'Armors']}
-        self.storage_data = {category: [] for category in ['Weapons', 'Shields', 'Armors']}
         self.create_widgets()
 
     def create_widgets(self):
@@ -36,11 +34,11 @@ class WeaponsManager(ttk.Frame):
         self.create_action_buttons()
 
     def create_treeview(self, parent, type, category):
-        columns = ("Name", "Type")
+        columns = ("Name",)
         treeview = ttk.Treeview(parent, columns=columns, show="headings")
         for col in columns:
             treeview.heading(col, text=col)
-            treeview.column(col, width=100, anchor="center")
+            treeview.column(col, width=200, anchor="w")
 
         scrollbar = ttk.Scrollbar(parent, orient="vertical", command=treeview.yview)
         treeview.configure(yscrollcommand=scrollbar.set)
@@ -71,14 +69,19 @@ class WeaponsManager(ttk.Frame):
 
     def refresh_equipment_display(self):
         for category in ['Weapons', 'Shields', 'Armors']:
-            self.populate_treeview(f'{category}_Inventory', self.current_knight.get_equipment(category.lower()))
-            self.populate_treeview(f'{category}_Storage', self.data_manager.get_storage_items(category))
+            if self.current_knight:
+                self.populate_treeview(f'{category}_Inventory', self.current_knight.get_equipment(category.lower()))
+            self.load_storage_items(category)
+
+    def load_storage_items(self, category):
+        storage_items = self.data_manager.get_storage_items(category)
+        self.populate_treeview(f'{category}_Storage', storage_items)
 
     def populate_treeview(self, treeview_name, items):
         treeview = self.treeview_types[treeview_name]
         treeview.delete(*treeview.get_children())
         for item in items:
-            treeview.insert('', 'end', values=(item['name'], item.get('type', 'Unknown')))
+            treeview.insert('', 'end', values=(item['name'],))
 
     def on_item_select(self, event):
         tree = event.widget
@@ -90,11 +93,11 @@ class WeaponsManager(ttk.Frame):
 
         if item_data['values']:
             name, item_type = item_data['values']
-            ttk.Label(self.detail_frame, text=f"Name: {name}", font=("", 12, "bold")).pack(anchor="w")
-            ttk.Label(self.detail_frame, text=f"Type: {item_type}").pack(anchor="w")
-
             category = self.get_category_from_treeview(tree)
             item_stats = self.get_item_stats(category, name)
+            
+            ttk.Label(self.detail_frame, text=f"Name: {item_stats['name']}", font=("", 12, "bold")).pack(anchor="w")
+            ttk.Label(self.detail_frame, text=f"Type: {item_stats['type']}").pack(anchor="w")
             
             for stat, value in item_stats.items():
                 if stat not in ['name', 'type']:
@@ -114,9 +117,27 @@ class WeaponsManager(ttk.Frame):
         return {}
 
     def move_to_inventory(self):
-        # Implement move to inventory logic
-        pass
+        selected_tab = self.notebook.tab(self.notebook.select(), "text")
+        storage_tree = self.treeview_types[f'{selected_tab}_Storage']
+        selected_item = storage_tree.focus()
+        if selected_item:
+            item_data = storage_tree.item(selected_item)
+            item_name = item_data['values'][0]
+            item = self.get_item_stats(selected_tab, item_name)
+            
+            self.current_knight.add_equipment(item, selected_tab.lower())
+            self.data_manager.remove_from_storage(item, selected_tab)
+            self.refresh_equipment_display()
 
     def remove_from_inventory(self):
-        # Implement remove from inventory logic
-        pass
+        selected_tab = self.notebook.tab(self.notebook.select(), "text")
+        inventory_tree = self.treeview_types[f'{selected_tab}_Inventory']
+        selected_item = inventory_tree.focus()
+        if selected_item:
+            item_data = inventory_tree.item(selected_item)
+            item_name = item_data['values'][0]
+            item = self.get_item_stats(selected_tab, item_name)
+            
+            self.current_knight.remove_equipment(item, selected_tab.lower())
+            self.data_manager.add_to_storage(item, selected_tab)
+            self.refresh_equipment_display()

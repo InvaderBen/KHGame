@@ -17,8 +17,8 @@ def save_json_file(filename, data):
         json.dump(data, f, indent=4)
 
 # utils/config.py
-KNIGHT_DIRECTORY = 'data/knights'
-STORAGE_DIRECTORY = 'data/storage'
+KNIGHT_DIRECTORY = r'\data\knights'
+STORAGE_DIRECTORY = r'\data\storage'
 SKILL_NAMES = ['Covering', 'Armor', 'Offense', 'Ranged', 'Riding', 'Shield', 'Unarmed', 'Weapon']
 PHYSICAL_ABILITIES = ['Strength', 'Endurance', 'Massive', 'Resistance', 'Reflex', 'Dexterity', 'Perception', 'Coordination']
 PERSONALITY_TRAITS = ['Intelligence', 'Willpower', 'Emotion', 'Creativity', 'Brave', 'Charisma']

@@ -44,21 +44,50 @@ class DataManager:
     def load_all_equipment(self):
         for category in EQUIPMENT_CATEGORIES:
             self.load_equipment_data(category)
+            #print(f'Loaded for {category}')
 
     def load_equipment_data(self, category):
         print(f"Loading equipment data for {category}")
-        folder_path = os.path.join(STORAGE_DIRECTORY, category.lower())
+        folder_path = os.path.abspath(os.path.join(STORAGE_DIRECTORY, category.lower()))
         
+        print(f"Absolute folder path: {folder_path}")
         ensure_directory_exists(folder_path)
 
         self.storage[category] = []
-        for filename in os.listdir(folder_path):
-            if filename.endswith('.json'):
-                item_data = load_json_file(os.path.join(folder_path, filename))
-                if item_data:
-                    self.storage[category].append(item_data)
+        
+        try:
+            files = os.listdir(folder_path)
+            print(f"Files in directory: {files}")
+            
+            for filename in files:
+                if filename.endswith('.json'):
+                    file_path = os.path.join(folder_path, filename)
+                    print(f"Attempting to load file: {file_path}")
+                    
+                    try:
+                        with open(file_path, 'r') as f:
+                            item_data = json.load(f)
+                        if item_data:
+                            print(f"Loaded data: {item_data}")
+                            self.storage[category].append(item_data)
+                        else:
+                            print(f"No data loaded from file: {file_path}")
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON in file {file_path}: {str(e)}")
+                    except Exception as e:
+                        print(f"Error loading file {file_path}: {str(e)}")
+                else:
+                    print(f"Skipping non-JSON file: {filename}")
+        except PermissionError:
+            print(f"Permission denied when accessing directory: {folder_path}")
+        except Exception as e:
+            print(f"Error listing directory {folder_path}: {str(e)}")
         
         print(f"Loaded {len(self.storage[category])} items for {category}")
+        print(f"Storage for {category}: {self.storage[category]}")
+
+    def get_storage_items(self, category):
+        return self.storage.get(category, [])
 
     def get_all_knights(self):
         return list(self.knights.values())
@@ -94,9 +123,6 @@ class DataManager:
             if k == knight:
                 return knight_id
         return None
-
-    def get_storage_items(self, category):
-        return self.storage.get(category, [])
 
     def add_to_storage(self, item, category):
         if category in self.storage:

@@ -1,0 +1,18 @@
+{
+    "type": "weapon",
+    "name": "Spear",
+    "perk": [
+        "bleeder",
+        "stunner",
+        "piercer"
+    ],
+    "strike": 12,
+    "prot": -5,
+    "defense": 4,
+    "speed": -4,
+    "evade": -7,
+    "block": 10,
+    "damage": 15,
+    "critical_condition": "strike roll > 50 defense",
+    "total_damage": 25
+}

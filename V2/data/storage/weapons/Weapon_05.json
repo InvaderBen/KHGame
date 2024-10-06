@@ -1,0 +1,18 @@
+{
+    "type": "weapon",
+    "name": "Mace",
+    "perk": [
+        "paralyzer",
+        "stunner",
+        "mover"
+    ],
+    "strike": 9,
+    "prot": 0,
+    "defense": 3,
+    "speed": -5,
+    "evade": 0,
+    "block": 9,
+    "damage": 17,
+    "critical_condition": "strike roll > 50 defense",
+    "total_damage": 33
+}
