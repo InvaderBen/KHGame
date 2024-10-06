@@ -1,0 +1,16 @@
+project/
+├── main.py
+├── knight.py
+├── gui/
+│   ├── __init__.py
+│   ├── main_window.py
+│   ├── knight_list.py
+│   ├── ability_editor.py
+│   ├── skill_editor.py
+│   └── equipment_manager.py
+├── data/
+│   ├── __init__.py
+│   └── data_manager.py
+└── utils/
+    ├── __init__.py
+    └── helpers.py

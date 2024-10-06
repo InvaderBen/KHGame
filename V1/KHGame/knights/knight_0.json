@@ -1,11 +1,11 @@
 {
-    "name": "knight_no3",
+    "name": "knight_no1",
     "age": 18,
     "skillPoints": 120,
     "persPoints": 14,
-    "physPoints": 20,
+    "physPoints": 22,
     "physical_abilities": {
-        "strength": 3,
+        "strength": 1,
         "endurance": 1,
         "massive": 1,
         "resistance": 1,

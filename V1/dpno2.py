@@ -34,17 +34,8 @@ class KnightApplication:
         
         self.remaining_skill_points = self.skillpoints - self.sumOfSkillCosts
 
-        self.storage_data = {
-            'Weapons': [],
-            'Shields': [],
-            'Armors': [],
-        }
-
-        self.inventory_data = {
-            'Weapons': [],
-            'Shields': [],
-            'Armors': [],
-        }
+        self.storage_data = {category: [] for category in ['Weapons', 'Shields', 'Armors']}
+        self.inventory_data = {category: [] for category in ['Weapons', 'Shields', 'Armors']}
 
         # Initialize dictionary for treeview widgets
         self.treeview_types = {
@@ -67,6 +58,7 @@ class KnightApplication:
 
         # Disable spinboxes initially
         self.set_spinboxes_state('disabled')
+
 
     def set_spinboxes_state(self, state):
         for spinbox in self.phys_spinboxes.values():
@@ -174,6 +166,7 @@ class KnightApplication:
             for item in self.stats_tree.get_children():
                 self.stats_tree.delete(item)
 
+
 #Displaying the Knight Object: -
     def create_knight_list(self):
         list_frame = tk.Frame(self.main_frame)
@@ -202,14 +195,24 @@ class KnightApplication:
             index = self.knight_listbox.size() - 1
         
         knight_id = list(self.knights.keys())[index]
-        self.current_knight = self.knights[knight_id]
+        
+        # Load the selected knight's data from the JSON file
+        self.current_knight = self.load_knight_from_file(knight_id)
+        self.knights[knight_id] = self.current_knight
         
         # Recreate and populate UI elements
         self.recreate_ability_editors()
         self.recreate_skill_editors()
         self.update_stats_treeview()
+        self.update_stats_treeview()
+        self.update_general()
+        self.refresh_inventory_treeview()
 
-        self.updateGeneral()
+        print("--------------------------------------------------------")
+        print(self.inventory_data)
+        print("--------------------------------------------------------")
+        print(self.current_knight.equipment)
+        print("--------------------------------------------------------")
 #---
 
 #Creating and Loading the Knight Object: -
@@ -235,11 +238,11 @@ class KnightApplication:
         self.edit_knight_name(index=self.knight_listbox.size() - 1)
 
     def load_existing_knights(self):
-        if not os.path.exists('knights'):
-            os.makedirs('knights')
+        if not os.path.exists('KHGame/knights'):
+            os.makedirs('KHGame/knights')
             return
 
-        for filename in os.listdir('knights'):
+        for filename in os.listdir('KHGame/knights'):
             if filename.endswith('.json'):
                 knight_id = int(filename.split('_')[1].split('.')[0])
                 knight = self.load_knight_from_file(knight_id)
@@ -248,7 +251,7 @@ class KnightApplication:
                     self.knight_listbox.insert(tk.END, knight.name)
 
     def load_knight_from_file(self, knight_id):
-        filename = f'knights/knight_{knight_id}.json'
+        filename = f'KHGame/knights/knight_{knight_id}.json'
         if os.path.exists(filename):
             with open(filename, 'r') as f:
                 knight_data = json.load(f)
@@ -272,6 +275,9 @@ class KnightApplication:
                 knight.skills[skill_name].current_level = skill_data['level']
                 knight.skills[skill_name].progression = skill_data['progression']
             
+            # Load equipment data
+            knight.equipment = knight_data.get('equipment', {'weapons': [], 'shields': [], 'armor': []})
+            
             # Calculate sums after loading all abilities
             knight.update_sums()
             
@@ -284,10 +290,10 @@ class KnightApplication:
         if not self.knights:
             return 0
         return max(self.knights.keys()) + 1
-    #Save the Knight's data on a .json file
+
     def save_knight_to_file(self, knight_id, knight):
-        if not os.path.exists('knights'):
-            os.makedirs('knights')
+        if not os.path.exists('KHGame/knights'):
+            os.makedirs('KHGame/knights')
         
         # Calculate the sums
         phys_sum = sum(getattr(knight, ability) for ability in 
@@ -327,13 +333,10 @@ class KnightApplication:
             },
             'skills': {skill_name: {'level': skill.current_level, 'progression': skill.progression}
                     for skill_name, skill in knight.skills.items()},
-            'equipment':{
-                'weapons': knight.equipment['weapons'],
-                'shields': knight.equipment['shields'],
-                'armor': knight.equipment['armor']
-            }
+            'equipment': knight.equipment,
+            'equipped_items': knight.equipped
         }
-        filename = f'knights/knight_{knight_id}.json'
+        filename = f'KHGame/knights/knight_{knight_id}.json'
         with open(filename, 'w') as f:
             json.dump(knight_data, f, indent=4)
 
@@ -346,7 +349,7 @@ class KnightApplication:
             if answer:
                 # Remove the knight's file
                 knight_id = list(self.knights.keys())[index]
-                filename = f'knights/knight_{knight_id}.json'
+                filename = f'KHGame/knights/knight_{knight_id}.json'
                 if os.path.exists(filename):
                     os.remove(filename)
                 
@@ -670,8 +673,12 @@ class KnightApplication:
             spinbox.config(from_=1, to=max_affordable_level)
 
     def update_skill_points_display(self):
-        if hasattr(self, 'skill_points_label'):
+        if hasattr(self, 'skill_points_label') and self.skill_points_label.winfo_exists():
             self.skill_points_label.config(text=f"Remaining Skill Points: {self.current_knight.skillPoints}")
+        else:
+            # Recreate the label if it doesn't exist
+            self.skill_points_label = tk.Label(self.skill_frame, text=f"Remaining Skill Points: {self.current_knight.skillPoints}")
+            self.skill_points_label.grid(row=len(self.SKILL_NAMES), column=0, columnspan=3, pady=10)
 
     def update_skill_progression_labels(self):
         if not hasattr(self, 'skill_progression_labels') or not self.current_knight:
@@ -714,8 +721,13 @@ class KnightApplication:
         self.skill_spinboxes = {}
         self.skill_progression_labels = {}
         
-        if hasattr(self, 'skill_points_label'):
+        # Check if the skill_points_label exists and is still valid
+        if hasattr(self, 'skill_points_label') and self.skill_points_label.winfo_exists():
             self.skill_points_label.config(text="Remaining Skill Points: --")
+        else:
+            # If it doesn't exist, create a new one
+            self.skill_points_label = tk.Label(self.skill_frame, text="Remaining Skill Points: --")
+            self.skill_points_label.grid(row=len(self.SKILL_NAMES), column=0, columnspan=3, pady=10)
 
 #To load equipment:--
     def create_equipment_notebook(self, parent):
@@ -741,6 +753,16 @@ class KnightApplication:
             self.load_equipment_data(category)
 
             self.notebook.add(tab, text=category)
+
+        self.buttons_frame = tk.Frame(self.notebook_frame)
+        self.buttons_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=True)
+
+        self.move_to_inventory_button = ttk.Button(self.buttons_frame, text='Move to Inventory', command=self.move_to_inventory)
+        self.remove_from_inventory_button = ttk.Button(self.buttons_frame, text='Remove from Inventory', command=self.remove_from_inventory)
+
+        self.move_to_inventory_button.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+        self.remove_from_inventory_button.pack(side=tk.RIGHT, fill=tk.Y, expand=True)
+
 
         # Populate treeviews after all data is loaded
         self.populate_treeviews()
@@ -778,13 +800,19 @@ class KnightApplication:
             storage_treeview = self.treeview_types[f'{category}_Storage']
             inventory_treeview = self.treeview_types[f'{category}_Inventory']
 
+            print(f"Populating {category}:")
+            print(f"Storage data: {self.storage_data[category]}")
+            print(f"Inventory data: {self.inventory_data[category]}")
+
             # Populate Storage treeview
             for item in self.storage_data[category]:
-                storage_treeview.insert('', 'end', values=(item['name'], item['weapon_type'] if 'weapon_type' in item else category[:-1]))
+                storage_treeview.insert('', 'end', values=(item['name'], item.get('weapon_type', category[:-1])))
 
-            # Populate Inventory treeview (currently empty)
+            # Populate Inventory treeview
             for item in self.inventory_data[category]:
-                inventory_treeview.insert('', 'end', values=(item['name'], item['weapon_type'] if 'weapon_type' in item else category[:-1]))
+                inventory_treeview.insert('', 'end', values=(item['name'], item.get('weapon_type', category[:-1])))
+
+        print("Treeviews population complete")
 
     def create_detail_frame(self, parent):
         self.detail_frame = ttk.LabelFrame(parent, text="Item Details")
@@ -793,8 +821,8 @@ class KnightApplication:
 
     def on_item_select(self, event):
         tree = event.widget
-        selected_item = tree.focus()
-        item_data = tree.item(selected_item)
+        self.selected_item = tree.focus()
+        item_data = tree.item(self.selected_item)
 
         # Clear previous details
         for widget in self.detail_frame.winfo_children():
@@ -805,7 +833,7 @@ class KnightApplication:
             self.detail_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
             name, eq_type = item_data['values']
-            ttk.Label(self.detail_frame, text=f"Name: {name} - Storage", font=("", 12, "bold")).pack(anchor="w")
+            ttk.Label(self.detail_frame, text=f"Name: {name}", font=("", 12, "bold")).pack(anchor="w")
             ttk.Label(self.detail_frame, text=f"Type: {eq_type}").pack(anchor="w")
             
             # Fetch actual stats from our data structure
@@ -817,9 +845,6 @@ class KnightApplication:
                     ttk.Label(self.detail_frame, text=f"{stat.capitalize()}: {value}").pack(anchor="w")
         else:
             self.detail_frame.pack_forget()
-
-        print('Selected')
-
 
     def get_category_from_treeview(self, treeview):
         for category in ['Weapons', 'Shields', 'Armors']:
@@ -833,78 +858,134 @@ class KnightApplication:
                 return item
         return {}
 
-
-
-
-
-    def find_treeview(self, parent):
-        for child in parent.winfo_children():
-            if isinstance(child, ttk.Treeview):
-                return child
-        return None
-
-    def update_equipment_stats_treeview(self, action='update'):
+    def move_to_inventory(self):
         if not self.current_knight:
-            print("No knight selected.")
+            print("No knight selected to equip an item.")
             return
 
-        if action == 'update':
-            self.inventory_data['weapons'] = self.current_knight.equipment['weapons']
-            self.inventory_data['shields'] = self.current_knight.equipment['shields']
-            self.inventory_data['armor'] = self.current_knight.equipment['armor']
-            print(self.inventory_data)
+        selected_tab = self.notebook.select()
+        tab_id = self.notebook.index(selected_tab)
+        category = self.notebook.tab(tab_id, "text")
 
-        # Update equipment based on action
-        if action == 'equip':
-            print(action)
-            # Logic for equipping item
-            pass
-        elif action == 'unequip':
-            print(action)
-            # Logic for unequipping item
-            pass
+        # Ensure the category is lowercase and plural
+        category_key = category.lower()
 
-        # Update the treeviews in each tab
-        for tab_id in self.notebook_1.tabs():
-            tab = self.notebook_1.nametowidget(tab_id)
-            category = self.notebook_1.tab(tab_id, "text").lower()
+        # Specifically look for the Storage treeview of the current category
+        storage_treeview = self.treeview_types.get(f'{category}_Storage')
+        if not storage_treeview:
+            print(f"Error: Could not find Storage treeview for {category}")
+            return
 
-            # Update inventory treeview
-            inventory_frame = tab.children['!labelframe']
-            inventory_tree = self.find_treeview(inventory_frame)
-            if inventory_tree:
-                self.populate_treeview(inventory_tree, self.inventory_data[category])
+        selected_items = storage_treeview.selection()
+        if not selected_items:
+            print(f"No item selected in the {category} Storage treeview.")
+            return
 
-    def equip_item(self):
+        selected_item = selected_items[0]
+        item_values = storage_treeview.item(selected_item, 'values')
+        if not item_values:
+            print("Selected item has no values.")
+            return
+
+        item_name = item_values[0]
+        print(f"Moving {item_name} from {category} Storage to inventory")
+
+        # Find the item in storage_data
+        item_to_move = next((item for item in self.storage_data[category] if item['name'] == item_name), None)
+        if item_to_move in self.inventory_data[category]:
+            print("Item already in inventory")
+            return
+
+        self.inventory_data[category].append(item_to_move)
+
+        # Update knight's equipment
+        if category_key not in self.current_knight.equipment:
+            self.current_knight.equipment[category_key] = []
+        self.current_knight.equipment[category_key].append(item_to_move)
+
+        # Save changes to JSON immediately
+        knight_id = next(id for id, knight in self.knights.items() if knight == self.current_knight)
+        self.save_knight_to_file(knight_id, self.current_knight)
+
+        self.refresh_inventory_treeview()
+
+        print(f"Item {item_name} moved to {self.current_knight.name}'s inventory")
+
+    def remove_from_inventory(self):
         if not self.current_knight:
+            print("No knight selected to unequip an item.")
             return
-        
-        category = self.notebooks.tab(self.notebooks.select(), "text").split(' - ')[0].lower()
-        listbox = getattr(self, f'{category}_listbox')
-        if not listbox.curselection():
-            return
-        index = listbox.curselection()[0]
-        item = self.storage_data[category][index]
-        self.current_knight.add_equipment(item, category)
-        print(self.current_knight.equipment)
-        self.update_knight_equipment_display()
 
-    def unequip_item(self):
-        if not self.current_knight:
-            return
-        category = self.notebooks.tab(self.notebooks.select(), "text").split(' - ')[0].lower()
-        equipped_items = self.current_knight.get_equipment(category)
-        if not equipped_items:
-            return
-        # For simplicity, we'll just unequip the first item
-        item = equipped_items[0]
-        self.current_knight.remove_equipment(item, category)
-        self.update_knight_equipment_display()
+        selected_tab = self.notebook.select()
+        tab_id = self.notebook.index(selected_tab)
+        category = self.notebook.tab(tab_id, "text")
 
+        # Ensure the category is lowercase and plural
+        category_key = category.lower()
+
+        # Specifically look for the Inventory treeview of the current category
+        inventory_treeview = self.treeview_types.get(f'{category}_Inventory')
+        if not inventory_treeview:
+            print(f"Error: Could not find Inventory treeview for {category}")
+            return
+
+        selected_items = inventory_treeview.selection()
+        if not selected_items:
+            print(f"No item selected in the {category} Inventory treeview.")
+            return
+
+        selected_item = selected_items[0]
+        item_values = inventory_treeview.item(selected_item, 'values')
+        if not item_values:
+            print("Selected item has no values.")
+            return
+
+        item_name = item_values[0]
+        print(f"Removing {item_name} from {self.current_knight.name}'s {category} inventory")
+
+        # Find the item in inventory_data
+        item_to_remove = next((item for item in self.inventory_data[category] if item['name'] == item_name), None)
+        if not item_to_remove:
+            print(f"Error: Item {item_name} not found in inventory data")
+            return
+
+        # Remove item from inventory and add to storage
+        self.inventory_data[category].remove(item_to_remove)
+        self.storage_data[category].append(item_to_remove)
+
+        # Update knight's equipment
+        if category_key in self.current_knight.equipment:
+            self.current_knight.equipment[category_key] = [item for item in self.current_knight.equipment[category_key] if item['name'] != item_name]
+
+        # Save changes to JSON immediately
+        knight_id = next(id for id, knight in self.knights.items() if knight == self.current_knight)
+        self.save_knight_to_file(knight_id, self.current_knight)
+
+        self.refresh_inventory_treeview()
+
+        print(f"Item {item_name} removed from {self.current_knight.name}'s inventory and moved to storage")
+
+    def refresh_inventory_treeview(self):
+        for category in ['Weapons', 'Shields', 'Armors']:
+            inventory_treeview = self.treeview_types[f'{category}_Inventory']
+
+            # Clear all existing items in the treeview
+            inventory_treeview.delete(*inventory_treeview.get_children())
+
+            # Insert new items
+            category_lower = category.lower()
+            if self.current_knight and category_lower in self.current_knight.equipment:
+                for item in self.current_knight.equipment[category_lower]:
+                    self.inventory_data[category].append(item)
+                    item_type = item.get('weapon_type', item.get('type', category[:-1]))
+                    inventory_treeview.insert('', 'end', values=(item['name'], item_type))
+
+    #Euipped items:
 
 
 
     def load_equipment_data(self, category):
+        print(f"Loading equipment data for {category}")
         folder_path = os.path.join('equipment', category.lower())
         
         if not os.path.exists(folder_path):
@@ -915,6 +996,8 @@ class KnightApplication:
             if filename.endswith('.json'):
                 item_data = self.load_item_data(os.path.join(folder_path, filename))
                 self.storage_data[category].append(item_data)
+        
+        print(f"Loaded {len(self.storage_data[category])} items for {category}")
 
     def load_item_data(self, file_path):
         with open(file_path, 'r') as f:
@@ -925,15 +1008,15 @@ class KnightApplication:
     def general(self, parent):
         self.generalFrame = ttk.Frame(parent)
         self.currentKnight = ttk.Label(self.generalFrame)
-        self.proceedButton = tk.Button(self.generalFrame, text='Proceed to Action', command=self.forwardToAction)
+        self.proceedButton = tk.Button(self.generalFrame, text='Proceed to Action', command=self.forward_to_action)
 
         self.generalFrame.pack(side=tk.BOTTOM, fill=tk.X, expand=True)
         self.currentKnight.pack(side=tk.LEFT, fill=tk.BOTH)
         self.proceedButton.pack(side=tk.RIGHT, fill=tk.BOTH)
 
-        self.updateGeneral()
+        self.update_general()
 
-    def updateGeneral(self):
+    def update_general(self):
         if self.current_knight is None:
             self.currentKnight.config(text='<No Knight Selected>')
             self.proceedButton.config(state=tk.DISABLED)  # Disable the button when no knight is selected
@@ -941,7 +1024,7 @@ class KnightApplication:
             self.currentKnight.config(text=self.current_knight.name)  # Use dot notation for accessing 'name'
             self.proceedButton.config(state=tk.NORMAL)  # Enable the button when a knight is selected
 
-    def forwardToAction(self):
+    def forward_to_action(self):
         print('You are now on the Action Screen')  # Removed the unused 'current' argument
 
 

@@ -1,8 +1,8 @@
 class Skill:
-    def __init__(self, name, progression):
+    def __init__(self, name, progression, current_level=1):
         self.name = name
         self.progression = progression
-        self.current_level = 1  # Initialize with level 1
+        self.current_level = current_level
 
     def get_value(self, level):
         if 1 <= level <= len(self.progression):
@@ -10,39 +10,46 @@ class Skill:
         else:
             raise ValueError("Level out of range")
 
-    def __str__(self):
-        return f"{self.name} Skill: Progression = {self.progression}, Current Level = {self.current_level}"
-    
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'progression': self.progression,
+            'current_level': self.current_level
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data['name'], data['progression'], data['current_level'])
+
 class Knight:
-    def __init__(self, name):
+    def __init__(self, name, age=18):
         self.name = name
-        self.age = 18
+        self.age = age
         self.skillPoints = (self.age - 20) * 36 + 192
-        self.persPoints = 20  # Changed from perPoints to persPoints
-        self.physPoints = 30  # Changed from phyPoints to physPoints
+        self.persPoints = 20
+        self.physPoints = 30
 
         # Physical abilities
-        self.strength = 1    # STR
-        self.endurance = 1   # END
-        self.massive = 1     # MAS
-        self.resistance = 1  # RES
-        self.reflex = 1      # REF
-        self.dexterity = 1   # DEX
-        self.perception = 1  # PER
-        self.coordination = 1  # COO
-        self.phySum = self.strength + self.endurance + self.massive + self.resistance + self.reflex + self.dexterity + self.perception + self.coordination
+        self.strength = 1
+        self.endurance = 1
+        self.massive = 1
+        self.resistance = 1
+        self.reflex = 1
+        self.dexterity = 1
+        self.perception = 1
+        self.coordination = 1
+
         # Personality abilities
-        self.intelligence = 1  # INT
-        self.willpower = 1   # WIL
-        self.emotion = 1     # EMO
-        self.creativity = 1  # CRE
-        self.brave = 1       # BRA
-        self.charisma = 1    # CHA
-        self.perSum = self.intelligence + self.willpower + self.emotion + self.creativity + self.brave + self.charisma
+        self.intelligence = 1
+        self.willpower = 1
+        self.emotion = 1
+        self.creativity = 1
+        self.brave = 1
+        self.charisma = 1
 
         # Core abilities
-        self.focus = 1       # FOC
-        self.communication = 1  # COM
+        self.focus = 1
+        self.communication = 1
         
         self.update_sums()
 
@@ -62,6 +69,13 @@ class Knight:
             'weapons': [],
             'shields': [],
             'armor': []
+        }
+
+        self.equipped = {
+            'head': None,
+            'torso': None,
+            'hand_left': None,
+            'hand_right': None
         }
 
     def update_sums(self):
@@ -92,29 +106,10 @@ class Knight:
                 'Charisma': self.charisma,
                 'Sum': self.persSum
             },
-            'skills':{
-                'Covering': self.skills["Covering"],
-                'Armor': self.skills["Armor"],
-                'Offense': self.skills["Offense"],
-                'Ranged': self.skills["Ranged"],
-                'Riding': self.skills["Riding"],
-                'Shield': self.skills["Shield"],
-                'Unarmed': self.skills["Unarmed"],
-                'Weapon': self.skills["Weapon"]
-            },
-            'core_stats': self.calculate_core_stats(),
             'skills': {skill_name: (skill.current_level, skill.get_value(skill.current_level)) 
-                   for skill_name, skill in self.skills.items()},
-            
+                       for skill_name, skill in self.skills.items()},
+            'core_stats': self.calculate_core_stats(),
         }
-
-    def set_physical_stat(self, stat_name, value):
-        if hasattr(self, stat_name):
-            setattr(self, stat_name, value)
-
-    def set_personality_stat(self, stat_name, value):
-        if hasattr(self, stat_name):
-            setattr(self, stat_name, value)
 
     def calculate_core_stats(self):
         return {
@@ -145,10 +140,12 @@ class Knight:
             raise ValueError(f"Skill '{skill_name}' does not exist.")
 
     def set_skill_level(self, skill_name, level):
-
         if skill_name in self.skills:
             if 1 <= level <= 10:
+                old_level = self.skills[skill_name].current_level
                 self.skills[skill_name].current_level = level
+                cost = sum(self.skills[skill_name].progression[old_level-1:level-1])
+                self.skillPoints -= cost
                 return self.skills[skill_name].get_value(level)
             else:
                 raise ValueError("Skill level must be between 1 and 10.")
@@ -157,12 +154,16 @@ class Knight:
         
     def set_physical_stat(self, stat_name, value):
         if hasattr(self, stat_name):
+            old_value = getattr(self, stat_name)
             setattr(self, stat_name, value)
+            self.physPoints -= (value - old_value)
             self.update_sums()
 
     def set_personality_stat(self, stat_name, value):
         if hasattr(self, stat_name):
+            old_value = getattr(self, stat_name)
             setattr(self, stat_name, value)
+            self.persPoints -= (value - old_value)
             self.update_sums()
 
     def add_equipment(self, item, category):
@@ -175,3 +176,71 @@ class Knight:
 
     def get_equipment(self, category):
         return self.equipment.get(category, [])
+
+    def equip_item(self, item, slot):
+        if slot in self.equipped:
+            self.equipped[slot] = item
+
+    def unequip_item(self, slot):
+        if slot in self.equipped:
+            item = self.equipped[slot]
+            self.equipped[slot] = None
+            return item
+        return None
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'age': self.age,
+            'skillPoints': self.skillPoints,
+            'persPoints': self.persPoints,
+            'physPoints': self.physPoints,
+            'physical_abilities': {
+                'strength': self.strength,
+                'endurance': self.endurance,
+                'massive': self.massive,
+                'resistance': self.resistance,
+                'reflex': self.reflex,
+                'dexterity': self.dexterity,
+                'perception': self.perception,
+                'coordination': self.coordination
+            },
+            'personality_abilities': {
+                'intelligence': self.intelligence,
+                'willpower': self.willpower,
+                'emotion': self.emotion,
+                'creativity': self.creativity,
+                'brave': self.brave,
+                'charisma': self.charisma
+            },
+            'core_abilities': {
+                'focus': self.focus,
+                'communication': self.communication
+            },
+            'skills': {name: skill.to_dict() for name, skill in self.skills.items()},
+            'equipment': self.equipment,
+            'equipped': self.equipped
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        knight = cls(data['name'], data['age'])
+        knight.skillPoints = data['skillPoints']
+        knight.persPoints = data['persPoints']
+        knight.physPoints = data['physPoints']
+        
+        for ability, value in data['physical_abilities'].items():
+            setattr(knight, ability, value)
+        
+        for ability, value in data['personality_abilities'].items():
+            setattr(knight, ability, value)
+        
+        for ability, value in data['core_abilities'].items():
+            setattr(knight, ability, value)
+        
+        knight.skills = {name: Skill.from_dict(skill_data) for name, skill_data in data['skills'].items()}
+        knight.equipment = data['equipment']
+        knight.equipped = data['equipped']
+        
+        knight.update_sums()
+        return knight

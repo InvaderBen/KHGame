@@ -1,0 +1,16 @@
+PS I:\KH_Py>  i:; cd 'i:\KH_Py'; & 'f:\Python\python.exe' 'c:\Users\tabla\.vscode\extensions\ms-python.debugpy-2024.10.0-win32-x64\bundled\libs\debugpy\adapter/../..\debugpy\launcher' '63643' '--' 'I:\KH_Py\KHGame\V2\main.py' 
+Loading equipment data for Weapons
+Loaded 0 items for Weapons
+Loading equipment data for Shields
+Loaded 0 items for Shields
+Loading equipment data for Armors
+Loaded 0 items for Armors
+Exception in Tkinter callback
+Traceback (most recent call last):
+  File "f:\Python\Lib\tkinter\__init__.py", line 1968, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "I:\KH_Py\KHGame\V2\gui\main_window.py", line 64, in delete_knight
+    self.knight_list.delete_knight(self.current_knight.id)
+                                   ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Knight' object has no attribute 'id'
