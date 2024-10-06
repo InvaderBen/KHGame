@@ -12,5 +12,11 @@ project/
 │   ├── __init__.py
 │   └── data_manager.py
 └── utils/
-    ├── __init__.py
-    └── helpers.py
+│    ├── __init__.py
+│    └── helpers.py
+├── plans/
+│    ├── plans_vers.png
+│    └── plans_vers.txt
+├──errors/
+│    ├── errors_vers.png
+│    └── console.txt
