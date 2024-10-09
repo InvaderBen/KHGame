@@ -22,3 +22,4 @@ if __name__ == "__main__":
     root = ThemedTk(theme="winxpblue")
     app = KnightApplication(root)
     root.mainloop()
+

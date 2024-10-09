@@ -92,16 +92,25 @@ class WeaponsManager(ttk.Frame):
             widget.destroy()
 
         if item_data['values']:
-            name, item_type = item_data['values']
+            name = item_data['values'][0]  # Only get the name
             category = self.get_category_from_treeview(tree)
             item_stats = self.get_item_stats(category, name)
             
-            ttk.Label(self.detail_frame, text=f"Name: {item_stats['name']}", font=("", 12, "bold")).pack(anchor="w")
-            ttk.Label(self.detail_frame, text=f"Type: {item_stats['type']}").pack(anchor="w")
-            
-            for stat, value in item_stats.items():
-                if stat not in ['name', 'type']:
-                    ttk.Label(self.detail_frame, text=f"{stat.capitalize()}: {value}").pack(anchor="w")
+            if item_stats:
+                ttk.Label(self.detail_frame, text=f"Name: {item_stats['name']}", font=("", 12, "bold")).pack(anchor="w")
+                ttk.Label(self.detail_frame, text=f"Type: {item_stats['type']}").pack(anchor="w")
+                
+                for stat, value in item_stats.items():
+                    if stat not in ['name', 'type']:
+                        if isinstance(value, list):
+                            # Handle array values (like 'perk')
+                            ttk.Label(self.detail_frame, text=f"{stat.capitalize()}:").pack(anchor="w")
+                            for item in value:
+                                ttk.Label(self.detail_frame, text=f"  • {item}").pack(anchor="w", padx=(20, 0))
+                        else:
+                            ttk.Label(self.detail_frame, text=f"{stat.capitalize()}: {value}").pack(anchor="w")
+            else:
+                ttk.Label(self.detail_frame, text="Item details not found").pack(anchor="w")
 
     def get_category_from_treeview(self, treeview):
         for category in ['Weapons', 'Shields', 'Armors']:
