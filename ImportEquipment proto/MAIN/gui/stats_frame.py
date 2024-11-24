@@ -131,17 +131,28 @@ class StatsFrame(ttk.Frame):
         self.perk_clear_button.configure(state=state)
 
     def modify_stat(self, stat_name, entry_widget):
-        """Handle stat modification"""
-        if not self.current_item:
-            return
-        value = entry_widget.get().strip()
-        
-        # Get parent window's command frame
-        main_window = self.winfo_toplevel().main_app
-        if main_window and hasattr(main_window, 'cmd_frame'):
-            # Execute modify command
-            command = f"modify '{self.current_item}' {stat_name} {value}"
-            main_window.cmd_frame.process_command_text(command)
+            """Handle stat modification"""
+            if not self.current_item:
+                return
+                
+            value = entry_widget.get().strip()
+            if not value:
+                return
+                
+            # Convert item name from display format to storage format
+            item_name = self.current_item.replace(' ', '_')
+                
+            # Handle different types of values
+            if stat_name in ['name', 'type']:  # String values need quotes
+                if not value.startswith("'"):
+                    value = f"'{value}'"
+                    
+            # Create and execute command with the correct item name format
+            command = f"modify '{item_name}' {stat_name} {value}"
+            
+            main_window = self.winfo_toplevel().main_app
+            if main_window and hasattr(main_window, 'cmd_frame'):
+                main_window.cmd_frame.process_command_text(command)
 
     def add_perk(self):
         if not self.current_item:

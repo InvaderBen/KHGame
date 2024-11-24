@@ -58,27 +58,67 @@ class ModifyEquipmentCommand(Command):
         self.file_path = file_path
         self.new_attributes = new_attributes
         self.old_attributes = None
-        
+        self.old_path = file_path
+
     def execute(self):
         try:
-            # Backup current data
+            # Backup current data and path
             if os.path.exists(self.file_path):
                 with open(self.file_path, 'r') as f:
                     self.old_attributes = json.load(f)
-            
-            # Write new data
+
+            # Check if type is being changed and handle file movement
+            if ('type' in self.new_attributes and 
+                self.old_attributes and 
+                self.new_attributes['type'] != self.old_attributes.get('type')):
+                
+                # Get new path based on type
+                new_type = self.new_attributes['type'].strip("'\"").lower()
+                filename = os.path.basename(self.file_path)
+                base_dir = os.path.dirname(os.path.dirname(self.file_path))  # Go up to storage dir
+                new_dir = os.path.join(base_dir, f"{new_type}s")  # Add 's' for plural
+                new_path = os.path.join(new_dir, filename)
+
+                # Create new directory if needed
+                os.makedirs(new_dir, exist_ok=True)
+
+                # Delete old file
+                if os.path.exists(self.file_path):
+                    os.remove(self.file_path)
+
+                # Update file path for writing
+                self.file_path = new_path
+                print(f"Moving file to: {new_path}")  # Debug print
+
+            # Write new data to (possibly new) location
+            os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
             with open(self.file_path, 'w') as f:
                 json.dump(self.new_attributes, f, indent=2)
-            
+
+            # Update equipment manager paths
+            self.equipment_manager.refresh_storage_paths()
             return True, "Equipment modified successfully"
+
         except Exception as e:
+            print(f"Error in ModifyEquipmentCommand: {str(e)}")  # Debug print
             return False, f"Failed to modify equipment: {str(e)}"
-    
+
     def undo(self):
         if self.old_attributes:
             try:
-                with open(self.file_path, 'w') as f:
+                # Remove current file if it exists
+                if os.path.exists(self.file_path):
+                    os.remove(self.file_path)
+
+                # Ensure old directory exists
+                os.makedirs(os.path.dirname(self.old_path), exist_ok=True)
+
+                # Restore old file
+                with open(self.old_path, 'w') as f:
                     json.dump(self.old_attributes, f, indent=2)
+
+                # Update equipment manager paths
+                self.equipment_manager.refresh_storage_paths()
                 return True, "Equipment modification undone"
             except Exception as e:
                 return False, f"Failed to undo modification: {str(e)}"

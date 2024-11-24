@@ -4,8 +4,9 @@ import os
 import re
 
 class CommandInterpreter:
-    def __init__(self, equipment_manager):
+    def __init__(self, equipment_manager, main_window=None):
         self.equipment_manager = equipment_manager
+        self.main_window = main_window
         self.current_command = None
         # Command-specific help messages
         self.command_help = {
@@ -116,62 +117,41 @@ Examples:
   create shield    - Creates shield_001 (or next available ID)
 """
         self.command_help['modify'] = """
-Modify Command Usage:
-------------------
-modify '<item_name>' <attribute> <value>
+        Modify Command Usage:
+        ------------------
+        modify '<item name>' <attribute> <value>
 
-Examples:
-  modify 'Iron Sword' name 'Flaming Sword'   # Both item name and new name need quotes
-  modify 'Magic Staff' damage 50             # Numbers don't need quotes
-  modify 'Battle Axe' perks append 'Fire Damage'   # String values always need quotes
-  modify 'War Hammer' perks remove 'Stun Effect'
-  modify 'Steel Bow' perks clear
+        Examples:
+        modify 'Weapon 001' type 'shield'     # Quotes required for item name and string values
+        modify 'Iron Sword' damage 50         # No quotes for numeric values
+        modify 'Magic Staff' perks append 'Fire Damage'
+        modify 'War Hammer' name 'Thunder Hammer'
 
-Notes:
-- String values ALWAYS need single quotes:
-  * Item names: 'Iron Sword', 'Battle Axe'
-  * Name attribute: modify 'weapon_001' name 'Excalibur'
-  * Type attribute: modify 'weapon_001' type 'sword'
-  * Perk values: modify 'weapon_001' perks append 'Fire Damage'
-
-- Number values NEVER need quotes:
-  * damage, strike, defense, speed, etc.
-  * Example: modify 'Iron Sword' damage 50
-
-Available attributes:
-  * type               - string (requires quotes)
-  * name               - string (requires quotes)
-  * perks              - list (values require quotes)
-  * strike             - integer
-  * prot              - integer
-  * defense           - integer
-  * speed             - integer
-  * evade             - integer
-  * block             - integer
-  * damage            - integer
-  * critical_condition - integer
-  * total_damage      - integer
-"""
+        Notes:
+        - Item names must be enclosed in single quotes, even if they contain spaces
+        - String values (name, type) must be enclosed in single quotes
+        - Numeric values should not be quoted
+        """
         self.command_help['create'] = """
-Create Command Usage:
-------------------
-create <type>
+        Create Command Usage:
+        ------------------
+        create <type>
 
-Type must be one of:
-  weapon  - Create a new weapon
-  armor   - Create a new armor
-  shield  - Create a new shield
+        Type must be one of:
+        weapon  - Create a new weapon
+        armor   - Create a new armor
+        shield  - Create a new shield
 
-Examples:
-  create weapon    - Creates 'weapon_001' (or next available ID)
-  create shield    - Creates 'shield_001' (or next available ID)
+        Examples:
+        create weapon    - Creates 'weapon_001' (or next available ID)
+        create shield    - Creates 'shield_001' (or next available ID)
 
-Notes:
-- Creates equipment with all attributes set to null
-- Use modify command to set values
-- The created item will have an ID-based name that you can later modify
-- To rename: modify 'weapon_001' name 'Excalibur'
-"""
+        Notes:
+        - Creates equipment with all attributes set to null
+        - Use modify command to set values
+        - The created item will have an ID-based name that you can later modify
+        - To rename: modify 'weapon_001' name 'Excalibur'
+        """
         self.command_help['show'] = """
 Show Command Usage:
 ----------------
@@ -261,121 +241,136 @@ Clears the command prompt output.
         return "\x1bCLEAR"
 
     def refresh(self, *args):
-        """Refresh equipment lists"""
-        if args:
-            category = args[0].lower()
-            if category not in self.equipment_manager.categories:
-                return f"Error: Invalid category '{category}'. Available categories: {', '.join(self.equipment_manager.categories)}"
-            self.equipment_manager.refresh_storage_paths()
-            return f"Refreshed {category} list"
-        else:
-            self.equipment_manager.refresh_storage_paths()
-            return "Refreshed all equipment lists"
+        """
+        refresh command:
+        1. Rescans all equipment folders
+        2. Updates storage paths in equipment manager
+        3. Reloads all treeviews to match current files
+        """
+        try:
+            # 1. Clear all current paths
+            for category in self.equipment_manager.storage_paths:
+                self.equipment_manager.storage_paths[category] = []
+            
+            # 2. Rescan all directories
+            for category in ['weapons', 'armors', 'shields']:
+                category_path = os.path.join(self.equipment_manager.base_dir, category)
+                if os.path.exists(category_path):
+                    files = [f for f in os.listdir(category_path) if f.endswith('.json')]
+                    self.equipment_manager.storage_paths[category] = [
+                        os.path.join(category_path, f) for f in files
+                    ]
+            
+            # 3. Update GUI if we have access to main window
+            if self.main_window:
+                for tab in self.main_window.category_tabs.values():
+                    tab.refresh_items()
+            
+            return "Refreshed: All equipment lists updated to match current files"
+            
+        except Exception as e:
+            return f"Error during refresh: {str(e)}"
+
+    def process_command_text(self, command, show_in_prompt=True):
+            """Process command text (can be called externally)"""
+            if command:
+                try:
+                    # Split by spaces but respect quoted strings
+                    parts = []
+                    current = []
+                    in_quotes = False
+                    
+                    for char in command + ' ':  # Add space to handle last token
+                        if char == "'" and not in_quotes:
+                            in_quotes = True
+                        elif char == "'" and in_quotes:
+                            in_quotes = False
+                            if current:
+                                parts.append(''.join(current))
+                                current = []
+                        elif char == ' ' and not in_quotes:
+                            if current:
+                                parts.append(''.join(current))
+                                current = []
+                        else:
+                            current.append(char)
+                    
+                    # Check if quotes were properly closed
+                    if in_quotes:
+                        return "Error: Unclosed quote in command"
+                    
+                    # Get command and arguments
+                    if not parts:
+                        return "Error: Empty command"
+                    
+                    command = parts[0].lower()
+                    args = parts[1:]
+                    
+                    # Check for help request
+                    if len(args) > 0 and args[-1] == 'help':
+                        if command in self.command_help:
+                            return self.command_help[command]
+                        return f"No specific help available for '{command}'"
+                    
+                    if command in self.commands:
+                        return self.commands[command](*args)
+                    else:
+                        return f"Error: Unknown command '{command}'. Type 'help' for available commands."
+                        
+                except Exception as e:
+                    return f"Error executing command: {str(e)}"
+
 
 
     @command_error_handler
     def modify_equipment(self, *args):
-        """Modify equipment attributes"""
-        self.current_command = f"modify {' '.join(args)}"
-        
-        if not args:
-            raise CommandError(
-                "Missing arguments",
-                command="modify",
-                function="modify_equipment"
-            )
-        
-        # Check if item name is properly quoted
-        if not (args[0].startswith("'") and args[0].endswith("'")):
-            raise CommandError(
-                "Item name must be enclosed in single quotes",
-                command=self.current_command,
-                function="modify_equipment",
-                args=args
-            )
-        
-        item_name = args[0][1:-1]  # Remove quotes
-        
-        if len(args) < 3:
-            raise CommandError(
-                "Missing attribute and value",
-                command=self.current_command,
-                function="modify_equipment",
-                args=args
-            )
-        
-        attr_name = args[1].lower()
-        
-        # Validate attribute exists
-        if attr_name not in self.valid_attributes:
-            raise CommandError(
-                f"Invalid attribute '{attr_name}'",
-                command=self.current_command,
-                function="modify_equipment",
-                args=args
-            )
-        
-        # ... (rest of modify_equipment with similar error handling)
-
-        @command_error_handler
-        def create_equipment(self, *args):
-            """Create new equipment with null values for all attributes"""
-            self.current_command = f"create {' '.join(args)}"
-            
+            """Modify equipment attributes"""
             if not args:
-                raise CommandError(
-                    "Equipment type required",
-                    command="create",
-                    function="create_equipment"
-                )
+                return "Error: modify command requires arguments. Type 'modify help' for usage."
                 
             if args[0] == 'help':
-                return self.command_help['create']
+                return self.command_help['modify']
                 
-            equip_type = args[0].lower()
+            # Extract item name and check quotes
+            if not (args[0].startswith("'") and args[0].endswith("'")):
+                return "Error: Item name must be enclosed in single quotes"
+                
+            item_name = args[0][1:-1]  # Remove quotes
             
-            # Check if type is valid (use singular form)
-            if equip_type not in self.equipment_types:
-                raise CommandError(
-                    f"Invalid equipment type '{equip_type}'. Must be weapon, armor, or shield",
-                    command=self.current_command,
-                    function="create_equipment",
-                    args=args
-                )
-            
-            # Get name if provided, otherwise generate one
-            equip_name = None
-            if len(args) > 1:
-                equip_name = " ".join(args[1:])
-            else:
-                # Get next available ID using the singular form
-                equip_name = self.generate_equipment_id(equip_type)
-            
-            # Create blank equipment with null values
-            blank_equipment = {
-                "type": equip_type,
-                "name": None,
-                "perks": None,
-                "strike": None,
-                "prot": None,
-                "defense": None,
-                "speed": None,
-                "evade": None,
-                "block": None,
-                "damage": None,
-                "critical_condition": None,
-                "total_damage": None
-            }
-            
-            # Use plural form for storage
-            category = self.equipment_types[equip_type]
-            success, msg = self.equipment_manager.create_equipment(category, equip_name, blank_equipment)
-            
-            if success:
-                return f"Created blank {equip_type} with name '{equip_name}'. Use modify command to set attributes."
-            return msg
+            if len(args) < 3:
+                return "Error: modify command requires attribute and value"
+                
+            attr_name = args[1].lower()
+            value = args[2]
 
+            # Find item
+            file_path = self.find_equipment_path(item_name)
+            if not file_path:
+                return f"Error: Equipment '{item_name}' not found"
 
+            try:
+                # Load current data
+                with open(file_path, 'r') as f:
+                    current_data = json.load(f)
+
+                # Handle type changes specially
+                if attr_name == 'type':
+                    new_type = value.strip("'\"").lower()
+                    if new_type not in ['weapon', 'armor', 'shield']:
+                        return "Error: Type must be weapon, armor, or shield"
+                    current_data['type'] = new_type
+                else:
+                    # Handle other attributes normally
+                    current_data[attr_name] = value
+
+                # Execute modification
+                success, msg = self.equipment_manager.modify_equipment(file_path, current_data)
+                if success:
+                    return f"Equipment modified successfully. Use 'refresh' to update views."
+                return msg
+
+            except Exception as e:
+                return f"Error modifying equipment: {str(e)}"
 
     def execute(self, command_text):
         """Parse and execute a command"""
@@ -609,33 +604,34 @@ For detailed help on a command, type:
         return f"Error: Equipment '{name}' not found"
     
     def show_equipment(self, *args):
-            if not args:
-                return "Error: show command requires an option. Type 'show help' for usage."
+        """Show equipment details"""
+        if not args:
+            return "Error: show command requires an option. Type 'show help' for usage."
+        
+        option = args[0].lower()
+        
+        # Show all equipment
+        if option == 'all':
+            return self.show_all_equipment()
             
-            option = args[0].lower()
+        # Show equipment by category
+        if option == 'category':
+            if len(args) < 2:
+                return "Error: Please specify a category. Available categories: weapons, armors, shields"
+            category = args[1].lower()
+            return self.show_category_equipment(category)
             
-            # Show all equipment
-            if option == 'all':
-                return self.show_all_equipment()
-                
-            # Show equipment by category
-            if option == 'category':
-                if len(args) < 2:
-                    return "Error: Please specify a category. Available categories: weapons, armors, shields"
-                category = args[1].lower()
-                return self.show_category_equipment(category)
-                
-            # Show specific equipment
-            # Join all args to handle names with spaces
-            name = ' '.join(args)
-            file_path = self.find_equipment_path(name)
-            if file_path:
-                data = self.equipment_manager.load_equipment_data(file_path)
-                # Use single quotes for the f-string and double quotes for the content
-                name_cleaned = name.strip("'\"")  # Clean the name first
-                return f'{name_cleaned}:\n{json.dumps(data, indent=2)}'
-            return f"Equipment '{name.strip('\"')}' not found"
-           
+        # Show specific equipment
+        # Join args in case name contains spaces
+        name = ' '.join(args)
+        file_path = self.find_equipment_path(name)
+        if file_path:
+            data = self.equipment_manager.load_equipment_data(file_path)
+            # Use the name as given in the command
+            name = name.strip("'\"")  # Remove quotes for display
+            return f"{name}:\n{json.dumps(data, indent=2)}"
+        return f"Error: Equipment '{name.strip('\"')}' not found"
+      
     def show_category_equipment(self, category):
             """Show all equipment in a specific category"""
             if category not in self.equipment_manager.categories:
@@ -675,8 +671,36 @@ For detailed help on a command, type:
         return "No equipment found in any category"
  
 
-
     def find_equipment_path(self, name):
+        """Find equipment file path by name"""
+        # Remove any quotes and clean the name
+        name = name.strip("'\"")
+        
+        # Try both space and underscore versions
+        search_patterns = [
+            name.lower(),                    # original
+            name.lower().replace(' ', '_'),  # with underscores
+            name.lower().replace('_', ' ')   # with spaces
+        ]
+        
+        # Search through all categories
+        for category, paths in self.equipment_manager.storage_paths.items():
+            for path in paths:
+                base_name = os.path.splitext(os.path.basename(path))[0].lower()
+                if base_name in search_patterns:
+                    return path
+        return None
+        """Find equipment file path by name"""
+        # Convert display name to filename format
+        filename_pattern = name.lower().replace(' ', '_')
+        
+        # Search through all categories
+        for category, paths in self.equipment_manager.storage_paths.items():
+            for path in paths:
+                path_name = os.path.splitext(os.path.basename(path))[0]
+                if path_name.lower() == filename_pattern:
+                    return path
+        return None
         """Find equipment file path by name"""
         # Remove any surrounding quotes if present
         name = name.strip("'\"")

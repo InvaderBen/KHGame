@@ -23,8 +23,8 @@ class CategoryTab(ttk.Frame):
         self.file_paths = {}
         
         # Load initial items
-        self.load_items()
-    
+        self.refresh_items()
+
     def load_items(self):
         """Load items into treeview"""
         # Clear existing items
@@ -39,6 +39,32 @@ class CategoryTab(ttk.Frame):
             name = self.equipment_manager.get_equipment_name(path)
             item_id = self.tree.insert("", "end", text=name)
             self.file_paths[item_id] = path
+
+    def refresh_items(self):
+            """Refresh items in the treeview"""
+            # Store current selection
+            selected_items = [self.tree.item(item_id)['text'] 
+                            for item_id in self.tree.selection()]
+            
+            # Clear existing items
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+                
+            # Get fresh equipment list
+            equipment_list = self.equipment_manager.get_equipment_list(self.category)
+            
+            # Add items to treeview
+            for path in equipment_list:
+                # Get base name and convert underscore to space for display
+                name = self.equipment_manager.get_equipment_name(path)
+                display_name = name.replace('_', ' ')
+                
+                item_id = self.tree.insert("", "end", text=display_name)
+                self.file_paths[item_id] = path
+                
+                # Restore selection if item still exists
+                if display_name in selected_items:
+                    self.tree.selection_add(item_id)
 
 class MainWindow:
     def __init__(self, root, equipment_manager):
@@ -65,11 +91,11 @@ class MainWindow:
         self.refresh_btn = ttk.Button(
             frame, 
             text="↻ REFRESH",
-            command=self.refresh_all
+            command=self.refresh_all_views
         )
         self.refresh_btn.pack(fill="x", padx=5, pady=5)
         
-        # Create notebook for category tabs
+        # Category tabs below refresh button
         self.category_notebook = ttk.Notebook(frame)
         self.category_notebook.pack(fill="both", expand=True, padx=5)
         
@@ -85,43 +111,35 @@ class MainWindow:
                          lambda e, t=tab: self.on_item_selected(e, t))
         
         return frame
-    
+ 
     def setup_right_panel(self):
-            frame = ttk.Frame()
-            
-            # Create vertical paned window
-            self.view_paned = ttk.PanedWindow(frame, orient=tk.VERTICAL)
-            self.view_paned.pack(fill="both", expand=True)
-            
-            # Create view tabs
-            self.view_notebook = ttk.Notebook(self.view_paned)
-            
-            # Main view (stats and command display)
-            self.main_view = ttk.Frame(self.view_notebook)
-            self.view_notebook.add(self.main_view, text="MAIN")
-            
-            # Stats view takes most of the space
-            self.stats_view = StatsFrame(self.main_view)
-            self.stats_view.pack(fill="both", expand=True)
-            
-            # Read-only command display at bottom of main view
-            self.cmd_display = self.create_cmd_display(self.main_view)
-            self.cmd_display.pack(fill="x", padx=5, pady=5)
-            
-            # CMD view (full command prompt)
-            self.cmd_view = ttk.Frame(self.view_notebook)
-            self.view_notebook.add(self.cmd_view, text="CMD")
-            
-            # Add notebook to paned window
-            self.view_paned.add(self.view_notebook)
-            
-            # Command frame (only in CMD view)
-            self.cmd_frame = CommandFrame(self.cmd_view, self.equipment_manager)
-            self.cmd_frame.pack(fill="both", expand=True)
-            
-            return frame
+        frame = ttk.Frame()
+        
+        # Create vertical paned window
+        self.view_paned = ttk.PanedWindow(frame, orient=tk.VERTICAL)
+        self.view_paned.pack(fill="both", expand=True)
+        
+        # Create view tabs
+        self.view_notebook = ttk.Notebook(self.view_paned)
+        
+        # Main view (stats)
+        self.stats_view = StatsFrame(self.view_notebook)
+        self.view_notebook.add(self.stats_view, text="MAIN")
+        
+        # CMD view
+        self.cmd_view = ttk.Frame(self.view_notebook)
+        self.view_notebook.add(self.cmd_view, text="CMD")
+        
+        self.view_paned.add(self.view_notebook)
+        
+        # Command frame with reference to main window
+        self.cmd_frame = CommandFrame(self.view_paned, self.equipment_manager, self)
+        self.view_paned.add(self.cmd_frame)
+        
+        return frame
 
-    
+
+
     def create_cmd_display(self, parent):
         """Create a read-only command display"""
         frame = ttk.LabelFrame(parent, text="Command Output")
@@ -155,8 +173,54 @@ class MainWindow:
             tab.load_items()
         # Execute refresh command
         self.cmd_frame.process_command_text("refresh", show_in_prompt=True)
-    
+
+    def refresh_all_views(self):
+        """Refresh all views and category tabs"""
+        # Execute refresh command
+        self.cmd_frame.process_command_text("refresh", show_in_prompt=True)
+        
+        # Refresh all category tabs
+        for category, tab in self.category_tabs.items():
+            tab.refresh_items()
+        
+        # Clear selection if the current item moved categories
+        current_tab = self.category_tabs[self.current_category] if hasattr(self, 'current_category') else None
+        if current_tab and hasattr(self, 'current_item'):
+            # Check if current item still exists in current category
+            item_found = False
+            for item_id in current_tab.tree.get_children():
+                if current_tab.tree.item(item_id)['text'] == self.current_item:
+                    item_found = True
+                    break
+            
+            if not item_found:
+                # Clear selection and stats view
+                self.current_item = None
+                self.stats_view.clear_stats()
+                self.stats_view.set_enabled(False)
+
     def on_item_selected(self, event, tab):
+        """Handle item selection in treeview"""
+        selection = tab.tree.selection()
+        if selection:
+            item_id = selection[0]
+            self.current_item = tab.tree.item(item_id)['text']
+            self.current_category = tab.category
+            file_path = tab.file_paths[item_id]
+            
+            # Update stats view
+            data = self.equipment_manager.load_equipment_data(file_path)
+            self.stats_view.current_item = self.current_item
+            self.stats_view.populate_stats(data)
+            self.stats_view.set_enabled(True)
+            
+            # Show in command prompt
+            self.cmd_frame.process_command_text(f"show '{self.current_item}'")
+        else:
+            self.current_item = None
+            self.current_category = None
+            self.stats_view.clear_stats()
+            self.stats_view.set_enabled(False)
         """Handle item selection in treeview"""
         selection = tab.tree.selection()
         if selection:

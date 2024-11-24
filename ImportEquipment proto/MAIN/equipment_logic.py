@@ -100,12 +100,14 @@ class EquipmentManager:
         return self.command_manager.redo_last_command()
 
     def refresh_storage_paths(self):
-        """Refresh the storage paths after modifications"""
-        self.storage_paths = {
-            'weapons': self.get_equipment_list('weapons'),
-            'armors': self.get_equipment_list('armors'),
-            'shields': self.get_equipment_list('shields')
-        }
+            """Refresh all storage paths"""
+            for category in self.categories:
+                category_path = os.path.join(self.base_dir, category)
+                if os.path.exists(category_path):
+                    files = [f for f in os.listdir(category_path) if f.endswith('.json')]
+                    self.storage_paths[category] = [os.path.join(self.base_dir, category, f) for f in files]
+                else:
+                    self.storage_paths[category] = []
 
     def debug_paths(self):
         """Print debug information about paths"""
