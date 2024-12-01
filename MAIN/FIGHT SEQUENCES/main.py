@@ -6,7 +6,7 @@ from data.data_manager import DataManager
 from utils.config import ensure_directory_exists
 from utils.config import KNIGHT_DIRECTORY, STORAGE_DIRECTORY
 
-class HomeScreen:
+class ActionScreen:
     def __init__(self, master):
         self.master = master
         self.master.title("Knights Information")
@@ -20,6 +20,6 @@ class HomeScreen:
 
 if __name__ == "__main__":
     root = ThemedTk(theme="winxpblue")
-    app = HomeScreen(root)
+    app = ActionScreen(root)
     root.mainloop()
 
