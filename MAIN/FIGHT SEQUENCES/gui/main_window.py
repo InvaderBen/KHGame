@@ -1,8 +1,8 @@
 from tkinter import Tk
-from FIGHT_SEQUENCES.gui.bottom_buttons import BottomButtons
-from FIGHT_SEQUENCES.gui.stances_menu import show_stance_menu
-from FIGHT_SEQUENCES.gui.knight_menu import show_knight_menu
-from FIGHT_SEQUENCES.gui.message_log import MessageLog
+from bottom_buttons import BottomButtons
+from stances_menu import show_stance_menu
+from knight_menu import show_knight_menu
+from message_log import MessageLog
 
 
 class MainWindow:

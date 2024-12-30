@@ -1,4 +1,7 @@
 # gui/main_window.py
+import os
+import json
+from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
 from gui.knight_list import KnightList
@@ -12,19 +15,24 @@ class MainWindow:
         self.master = master
         self.data_manager = data_manager
         
-        self.main_frame = ttk.Frame(self.master)
-        self.main_frame.pack(fill=tk.BOTH, expand=1)
+    
+        # Create main container for LEFT|CENTER|RIGHT panels
+        self.top_frame = ttk.Frame(self.master)
+        self.top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
+        # Create panels in order
         self.create_left_panel()
-        self.create_notebook()
+        self.create_center_panel()  # New method for notebook
+        self.create_right_panel()
+        self.create_status_bar()    # RIGHT
         
-        self.create_status_bar()
-        
+
         self.current_knight = None
 
-    def create_notebook(self):
-        self.notebook = ttk.Notebook(self.main_frame)
-        self.notebook.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
+    def create_center_panel(self):
+        # Center panel with notebook
+        self.notebook = ttk.Notebook(self.top_frame)
+        self.notebook.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.ability_editor = AbilityEditor(self.notebook, self.data_manager)
         self.all_statistics = AllStatistics(self.notebook, self.data_manager)
@@ -38,12 +46,29 @@ class MainWindow:
 
         self.ability_editor.bind("<<StatsUpdated>>", lambda e: self.all_statistics.update_display())
 
+
+    def create_right_panel(self):
+        self.right_panel = ttk.LabelFrame(self.top_frame, text="Knight")
+        self.right_panel.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+
+        # Create label for artwork image
+        self.artwork_label = ttk.Label(self.right_panel)
+        self.artwork_label.pack(side=tk.TOP, padx=10, pady=5)
+        
+        # Create label for artwork filename
+        self.artwork_path_label = ttk.Label(self.right_panel, text="No artwork selected")
+        self.artwork_path_label.pack(side=tk.TOP, padx=10, pady=5)
+        
+        # Store the current PhotoImage reference
+        self.current_artwork = None
+
     def create_left_panel(self):
-        self.left_panel = ttk.Frame(self.main_frame)
+        self.left_panel = ttk.Frame(self.top_frame)  # Note: parent is top_frame
         self.left_panel.pack(side=tk.LEFT, fill=tk.Y)
         
         self.create_knight_list()
         self.create_knight_buttons()
+
 
     def create_knight_list(self):
         self.knight_list = KnightList(self.left_panel, self.data_manager)
@@ -74,14 +99,17 @@ class MainWindow:
                 self.current_knight = None
                 self.update_general_frame()
 
+
     def create_status_bar(self):
-        self.status_bar = ttk.Frame(self.master)
+        # Status bar will be the BOTTOM panel
+        self.status_bar = ttk.Frame(self.master)  # Note: parent is master
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.current_knight_label = ttk.Label(self.status_bar, text="<No Knight Selected>")
         self.current_knight_label.pack(side=tk.LEFT, padx=10)
 
-        self.proceed_button = ttk.Button(self.status_bar, text="Proceed to Action", command=self.proceed_to_action, state=tk.DISABLED)
+        self.proceed_button = ttk.Button(self.status_bar, text="Proceed to Action", 
+                                    command=self.proceed_to_action, state=tk.DISABLED)
         self.proceed_button.pack(side=tk.RIGHT, padx=10)
 
     def update_status_bar(self):
@@ -92,14 +120,50 @@ class MainWindow:
             self.current_knight_label.config(text="<No Knight Selected>")
             self.proceed_button.config(state=tk.DISABLED)
 
+
     def on_knight_select(self, event):
         knight_id = self.knight_list.get_selected_knight_id()
         self.current_knight = self.data_manager.get_knight(knight_id)
+        
+        # Update artwork display
+        if self.current_knight and hasattr(self.current_knight, 'artwork'):
+            self.load_artwork(self.current_knight.artwork)
+        else:
+            self.artwork_label.config(image='')
+            self.artwork_path_label.config(text="No artwork selected")
+        
         self.ability_editor.load_knight(self.current_knight)
         self.all_statistics.load_knight(self.current_knight)
         self.skill_editor.load_knight(self.current_knight)
         self.weapons_manager.load_knight(self.current_knight)
         self.update_status_bar()
 
+    def load_artwork(self, artwork_path):
+        try:
+            full_path = os.path.normpath(f"I:/{artwork_path}")
+            
+            # Load and process image with PIL
+            pil_image = Image.open(full_path)
+            pil_image = pil_image.rotate(-90, expand=True)  # Rotate 90° clockwise
+            width = pil_image.width // 2
+            height = pil_image.height // 2
+            pil_image = pil_image.resize((width, height))
+            
+            # Convert to PhotoImage
+            self.current_artwork = ImageTk.PhotoImage(pil_image)
+            self.artwork_label.config(image=self.current_artwork)
+            self.artwork_path_label.config(text=os.path.basename(artwork_path))
+            
+        except Exception as e:
+            print(f"Error loading artwork: {e}")
+            self.artwork_label.config(image='')
+            self.artwork_path_label.config(text="Error loading artwork")
+
     def proceed_to_action(self):
-        print('You are now on the Action Screen')
+        if self.current_knight:
+            knight_id = self.data_manager.get_knight_id(self.current_knight)
+            state = {'active_knight': knight_id}
+            with open('I:/KH_Py/KHGame/MAIN/__init__.json', 'w') as f:
+                json.dump(state, f, indent=2)
+            print('State saved, transitioning to Action Screen')
+            print('You are now on the Action Screen')

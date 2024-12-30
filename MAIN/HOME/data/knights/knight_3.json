@@ -1,6 +1,7 @@
 {
   "name": "Knight_3",
   "age": 18,
+  "artwork": "KH_Py\\KHGame\\ART\\crusader_C.sprite.attack_scroll.png",
   "skillPoints": 120,
   "persPoints": 20,
   "physPoints": 30,

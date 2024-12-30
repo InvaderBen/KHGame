@@ -1,3 +1,7 @@
+import random
+
+
+
 class Skill:
     def __init__(self, name, progression, current_level=1):
         self.name = name
@@ -25,6 +29,8 @@ class Knight:
     def __init__(self, name, age=18):
         self.name = name
         self.age = age
+        self.artwork = self._select_random_artwork()
+
         self.skillPoints = (self.age - 20) * 36 + 192
         self.persPoints = 20
         self.physPoints = 30
@@ -77,6 +83,16 @@ class Knight:
             'hand_left': None,
             'hand_right': None
         }
+
+
+    def _select_random_artwork(self):
+        artworks = [
+            "KH_Py\\KHGame\\ART\\crusader_A.sprite.attack_scroll.png",
+            "KH_Py\\KHGame\\ART\\crusader_B.sprite.attack_scroll.png",
+            "KH_Py\\KHGame\\ART\\crusader_C.sprite.attack_scroll.png",
+            "KH_Py\\KHGame\\ART\\crusader_D.sprite.attack_scroll.png"
+        ]
+        return random.choice(artworks)
 
     def update_sums(self):
         self.physSum = (self.strength + self.endurance + self.massive + self.resistance + 
@@ -192,6 +208,7 @@ class Knight:
         return {
             'name': self.name,
             'age': self.age,
+            'artwork': self.artwork,
             'skillPoints': self.skillPoints,
             'persPoints': self.persPoints,
             'physPoints': self.physPoints,
@@ -225,6 +242,10 @@ class Knight:
     @classmethod
     def from_dict(cls, data):
         knight = cls(data['name'], data['age'])
+
+        if 'artwork' in data:
+            knight.artwork = data['artwork']
+
         knight.skillPoints = data['skillPoints']
         knight.persPoints = data['persPoints']
         knight.physPoints = data['physPoints']
