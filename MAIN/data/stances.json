@@ -1,0 +1,322 @@
+[
+    {
+        "id": 1,
+        "name": "Guard Stance",
+        "category": "Defensive Stances",
+        "stance_level": "Basic",
+        "attributes": {
+            "defense": 15,
+            "strike": 0,
+            "block": 15,
+            "evade": 5,
+            "balance": 5,
+            "damage": 0
+        },
+        "action_point_cost": 5,
+        "combined_value": 55
+    },
+    {
+        "id": 2,
+        "name": "Front Stance",
+        "category": "Offensive Stances",
+        "stance_level": "Basic",
+        "attributes": {
+            "defense": -5,
+            "strike": 15,
+            "block": -5,
+            "evade": 10,
+            "balance": 5,
+            "damage": 10
+        },
+        "action_point_cost": 3,
+        "combined_value": 55
+    },
+    {
+        "id": 3,
+        "name": "Balanced Stance",
+        "category": "Balanced Stances",
+        "stance_level": "Basic",
+        "attributes": {
+            "defense": 5,
+            "strike": 5,
+            "block": 5,
+            "evade": 5,
+            "balance": 15,
+            "damage": 5
+        },
+        "action_point_cost": 5,
+        "combined_value": 55
+    },
+    {
+        "id": 4,
+        "name": "Rear Weighted Stance",
+        "category": "Evasive Stances",
+        "stance_level": "Basic",
+        "attributes": {
+            "defense": 10,
+            "strike": 0,
+            "block": 10,
+            "evade": 15,
+            "balance": 5,
+            "damage": 0
+        },
+        "action_point_cost": 5,
+        "combined_value": 55
+    },
+    {
+        "id": 5,
+        "name": "Wide Stance",
+        "category": "Execution Stances",
+        "stance_level": "Basic",
+        "attributes": {
+            "defense": 5,
+            "strike": 10,
+            "block": 5,
+            "evade": 5,
+            "balance": 5,
+            "damage": 5
+        },
+        "action_point_cost": 4,
+        "combined_value": 55
+    },
+    {
+        "id": 6,
+        "name": "Hanging Guard",
+        "category": "Defensive Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 30,
+            "strike": 15,
+            "block": 25,
+            "evade": 0,
+            "balance": 10,
+            "damage": 0
+        },
+        "action_point_cost": 7,
+        "combined_value": 85
+    },
+    {
+        "id": 7,
+        "name": "Cross Guard",
+        "category": "Defensive Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 20,
+            "strike": 10,
+            "block": 20,
+            "evade": 5,
+            "balance": 5,
+            "damage": 0
+        },
+        "action_point_cost": 5,
+        "combined_value": 75
+    },
+    {
+        "id": 8,
+        "name": "High Guard",
+        "category": "Offensive Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 10,
+            "strike": 30,
+            "block": 5,
+            "evade": 5,
+            "balance": 5,
+            "damage": 10
+        },
+        "action_point_cost": 5,
+        "combined_value": 80
+    },
+    {
+        "id": 9,
+        "name": "Diagonal Stance",
+        "category": "Execution Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 5,
+            "strike": 20,
+            "block": 10,
+            "evade": 5,
+            "balance": 5,
+            "damage": 25
+        },
+        "action_point_cost": 6,
+        "combined_value": 80
+    },
+    {
+        "id": 10,
+        "name": "Side Stance",
+        "category": "Balanced Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 15,
+            "strike": 15,
+            "block": 15,
+            "evade": 15,
+            "balance": 15,
+            "damage": 0
+        },
+        "action_point_cost": 6,
+        "combined_value": 85
+    },
+    {
+        "id": 11,
+        "name": "Low Guard",
+        "category": "Balanced Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 10,
+            "strike": 10,
+            "block": 20,
+            "evade": 0,
+            "balance": 20,
+            "damage": 10
+        },
+        "action_point_cost": 7,
+        "combined_value": 75
+    },
+    {
+        "id": 12,
+        "name": "Open Stance",
+        "category": "Evasive Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 10,
+            "strike": 20,
+            "block": 10,
+            "evade": 20,
+            "balance": 5,
+            "damage": 10
+        },
+        "action_point_cost": 6,
+        "combined_value": 85
+    },
+    {
+        "id": 13,
+        "name": "Back Stance",
+        "category": "Evasive Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 10,
+            "strike": 10,
+            "block": 10,
+            "evade": 20,
+            "balance": 5,
+            "damage": 5
+        },
+        "action_point_cost": 5,
+        "combined_value": 75
+    },
+    {
+        "id": 14,
+        "name": "Ox Guard",
+        "category": "Offensive Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 10,
+            "strike": 35,
+            "block": 5,
+            "evade": 5,
+            "balance": 5,
+            "damage": 15
+        },
+        "action_point_cost": 6,
+        "combined_value": 85
+    },
+    {
+        "id": 15,
+        "name": "Closed Stance",
+        "category": "Execution Stances",
+        "stance_level": "Advanced",
+        "attributes": {
+            "defense": 0,
+            "strike": 30,
+            "block": 0,
+            "evade": 10,
+            "balance": 0,
+            "damage": 20
+        },
+        "action_point_cost": 4,
+        "combined_value": 80
+    },
+    {
+        "id": 16,
+        "name": "Defensive Stance",
+        "category": "Defensive Stances",
+        "stance_level": "Expert",
+        "attributes": {
+            "defense": 50,
+            "strike": -15,
+            "block": 40,
+            "evade": 0,
+            "balance": 30,
+            "damage": 0
+        },
+        "action_point_cost": 7,
+        "combined_value": 110
+    },
+    {
+        "id": 17,
+        "name": "Aggressive Stance",
+        "category": "Offensive Stances",
+        "stance_level": "Expert",
+        "attributes": {
+            "defense": -15,
+            "strike": 55,
+            "block": 0,
+            "evade": 20,
+            "balance": 10,
+            "damage": 25
+        },
+        "action_point_cost": 5,
+        "combined_value": 110
+    },
+    {
+        "id": 18,
+        "name": "Zorn Stance",
+        "category": "Balanced Stances",
+        "stance_level": "Expert",
+        "attributes": {
+            "defense": 15,
+            "strike": 20,
+            "block": 15,
+            "evade": 15,
+            "balance": 40,
+            "damage": 10
+        },
+        "action_point_cost": 7,
+        "combined_value": 120
+    },
+    {
+        "id": 19,
+        "name": "Advanced Rear Stance",
+        "category": "Evasive Stances",
+        "stance_level": "Expert",
+        "attributes": {
+            "defense": 20,
+            "strike": 15,
+            "block": 15,
+            "evade": 40,
+            "balance": 10,
+            "damage": 10
+        },
+        "action_point_cost": 7,
+        "combined_value": 115
+    },
+    {
+        "id": 20,
+        "name": "Vom Tag",
+        "category": "Execution Stances",
+        "stance_level": "Expert",
+        "attributes": {
+            "defense": -10,
+            "strike": 50,
+            "block": 5,
+            "evade": 15,
+            "balance": 15,
+            "damage": 40
+        },
+        "action_point_cost": 8,
+        "combined_value": 115
+    }
+]

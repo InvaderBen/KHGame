@@ -1,0 +1,19 @@
+{
+    "type": "weapon",
+    "name": "One-Handed Flail",
+    "handling": "one handed",
+    "perks": [
+        "paralyzer",
+        "stunner",
+        "disrupter"
+    ],
+    "strike": 4,
+    "prot": -2,
+    "defense": 0,
+    "speed": -2,
+    "evade": 0,
+    "block": 3,
+    "damage": 11,
+    "critical_condition": "strike roll > 50 defense",
+    "total_damage": 14
+}

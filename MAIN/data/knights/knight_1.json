@@ -1,0 +1,225 @@
+{
+  "name": "Knight_1",
+  "age": 21,
+  "stance_skill": 1,
+  "artwork": "KH_Py\\KHGame\\ART\\crusader_B.sprite.attack_scroll.png",
+  "preferred_hand": "left",
+  "skillPoints": 120,
+  "persPoints": 20,
+  "physPoints": 24,
+  "physical_abilities": {
+    "strength": 3,
+    "endurance": 3,
+    "massive": 3,
+    "resistance": 1,
+    "reflex": 1,
+    "dexterity": 1,
+    "perception": 1,
+    "coordination": 1
+  },
+  "personality_abilities": {
+    "intelligence": 1,
+    "willpower": 1,
+    "emotion": 1,
+    "creativity": 1,
+    "brave": 1,
+    "charisma": 1
+  },
+  "core_abilities": {
+    "focus": 1,
+    "communication": 1
+  },
+  "skills": {
+    "Covering": {
+      "name": "Covering",
+      "progression": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        50,
+        125
+      ],
+      "current_level": 1
+    },
+    "Armor": {
+      "name": "Armor",
+      "progression": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+        11,
+        12,
+        20
+      ],
+      "current_level": 1
+    },
+    "Offense": {
+      "name": "Offense",
+      "progression": [
+        2,
+        5,
+        10,
+        10,
+        20,
+        20,
+        30,
+        30,
+        40,
+        75
+      ],
+      "current_level": 1
+    },
+    "Ranged": {
+      "name": "Ranged",
+      "progression": [
+        2,
+        5,
+        12,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        55
+      ],
+      "current_level": 1
+    },
+    "Riding": {
+      "name": "Riding",
+      "progression": [
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        5
+      ],
+      "current_level": 1
+    },
+    "Shield": {
+      "name": "Shield",
+      "progression": [
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        75
+      ],
+      "current_level": 1
+    },
+    "Unarmed": {
+      "name": "Unarmed",
+      "progression": [
+        2,
+        5,
+        10,
+        10,
+        20,
+        20,
+        30,
+        30,
+        40,
+        50
+      ],
+      "current_level": 1
+    },
+    "Weapon": {
+      "name": "Weapon",
+      "progression": [
+        1,
+        3,
+        6,
+        8,
+        10,
+        12,
+        15,
+        18,
+        24,
+        36
+      ],
+      "current_level": 1
+    }
+  },
+  "equipment": {
+    "weapons": [
+      {
+        "type": "weapon",
+        "name": "Battleaxe",
+        "handling": "two handed",
+        "perks": [
+          "bleeder",
+          "paralyzer",
+          "stunner",
+          "mover"
+        ],
+        "strike": 12,
+        "prot": -3,
+        "defense": 10,
+        "speed": -3,
+        "evade": -5,
+        "block": 5,
+        "damage": 18,
+        "critical_condition": "strike roll > 50 defense",
+        "total_damage": 34
+      }
+    ],
+    "shields": [],
+    "armor": []
+  },
+  "equipped": {
+    "head": null,
+    "torso": null,
+    "hand_left": {
+      "type": "weapon",
+      "name": "Hatchet",
+      "handling": "one handed",
+      "perks": [
+        "bleeder",
+        "paralyzer"
+      ],
+      "strike": 8,
+      "prot": 0,
+      "defense": 5,
+      "speed": -1,
+      "evade": 0,
+      "block": 7,
+      "damage": 8,
+      "critical_condition": "strike roll > 50 defense",
+      "total_damage": 27
+    },
+    "hand_right": null
+  },
+  "combat_stats": {
+    "Combat Damage.": 8,
+    "Combat HP": 5,
+    "Combat Strike.": 8,
+    "Combat Block": 6,
+    "Combat Evade": 4,
+    "Combat Mood": 3,
+    "Combat Defense": 81,
+    "Combat ACC.": 4,
+    "Combat Protection": 6,
+    "Combat Speed": 4,
+    "Combat Hardness": 5,
+    "Combat Balance": 3
+  }
+}

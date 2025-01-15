@@ -4,11 +4,11 @@ import json
 from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
-from knight_list import KnightList
-from ability_editor import AbilityEditor
-from skill_editor import SkillEditor
-from all_statistics import AllStatistics
-from weapons_manager import WeaponsManager
+from HOME.gui.knight_list import KnightList
+from HOME.gui.ability_editor import AbilityEditor
+from HOME.gui.skill_editor import SkillEditor
+from HOME.gui.all_statistics import AllStatistics
+from HOME.gui.weapons_manager import WeaponsManager
 
 class MainWindow:
     def __init__(self, master, data_manager):

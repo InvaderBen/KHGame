@@ -1,0 +1,20 @@
+{
+    "type": "weapon",
+    "name": "Battleaxe",
+    "handling": "two handed",
+    "perks": [
+        "bleeder",
+        "paralyzer",
+        "stunner",
+        "mover"
+    ],
+    "strike": 12,
+    "prot": -3,
+    "defense": 10,
+    "speed": -3,
+    "evade": -5,
+    "block": 5,
+    "damage": 18,
+    "critical_condition": "strike roll > 50 defense",
+    "total_damage": 34
+}
