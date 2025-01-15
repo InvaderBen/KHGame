@@ -1,14 +1,14 @@
 # gui/main_window.py
+import sys
+sys.path.append(r"I:\KH_Py\KHGame")
 import os
 import json
 from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
-from HOME.gui.knight_list import KnightList
-from HOME.gui.ability_editor import AbilityEditor
-from HOME.gui.skill_editor import SkillEditor
-from HOME.gui.all_statistics import AllStatistics
-from HOME.gui.weapons_manager import WeaponsManager
+from MAIN.SELECTION.gui.knight_list import KnightList
+from MAIN.SELECTION.gui.all_statistics import AllStatistics
+from MAIN.SELECTION.gui.weapons_manager import WeaponsManager
 
 class MainWindow:
     def __init__(self, master, data_manager):
@@ -34,17 +34,11 @@ class MainWindow:
         self.notebook = ttk.Notebook(self.top_frame)
         self.notebook.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.ability_editor = AbilityEditor(self.notebook, self.data_manager)
         self.all_statistics = AllStatistics(self.notebook, self.data_manager)
-        self.skill_editor = SkillEditor(self.notebook, self.data_manager)
         self.weapons_manager = WeaponsManager(self.notebook, self.data_manager)
 
-        self.notebook.add(self.ability_editor, text='Edit Abilities')
         self.notebook.add(self.all_statistics, text='All Statistics')
-        self.notebook.add(self.skill_editor, text='Skills')
         self.notebook.add(self.weapons_manager, text='Weapons')
-
-        self.ability_editor.bind("<<StatsUpdated>>", lambda e: self.all_statistics.update_display())
 
 
     def create_right_panel(self):

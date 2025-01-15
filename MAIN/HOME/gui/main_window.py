@@ -1,14 +1,18 @@
 # gui/main_window.py
+import sys
+sys.path.append(r"I:\KH_Py\KHGame")
+
+
 import os
 import json
 from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
-from knight_list import KnightList
-from ability_editor import AbilityEditor
-from skill_editor import SkillEditor
-from all_statistics import AllStatistics
-from weapons_manager import WeaponsManager
+from MAIN.HOME.gui.knight_list import KnightList
+from MAIN.HOME.gui.ability_editor import AbilityEditor
+from MAIN.HOME.gui.skill_editor import SkillEditor
+from MAIN.HOME.gui.all_statistics import AllStatistics
+from MAIN.HOME.gui.weapons_manager import WeaponsManager
 
 class MainWindow:
     def __init__(self, master, data_manager):

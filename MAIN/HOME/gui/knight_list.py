@@ -1,3 +1,6 @@
+import sys
+sys.path.append(r"I:\KH_Py\KHGame")
+
 # gui/knight_list.py
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog

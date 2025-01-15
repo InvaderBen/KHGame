@@ -1,9 +1,0 @@
-Exception in Tkinter callback
-Traceback (most recent call last):
-  File "f:\Python\Lib\tkinter\__init__.py", line 1968, in __call__
-    return self.func(*args)
-           ^^^^^^^^^^^^^^^^
-  File "I:\KH_Py\KHGame\V2\gui\weapons_manager.py", line 95, in on_item_select       
-    name, item_type = item_data['values']
-    ^^^^^^^^^^^^^^^
-ValueError: not enough values to unpack (expected 2, got 1)

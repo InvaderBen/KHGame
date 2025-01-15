@@ -1,6 +1,10 @@
+import sys
+sys.path.append(r"I:\KH_Py\KHGame")
+
+
 import tkinter as tk
 from tkinter import ttk
-from HOME.utils.config import PHYSICAL_ABILITIES, PERSONALITY_TRAITS
+from MAIN.utils.config import PHYSICAL_ABILITIES, PERSONALITY_TRAITS
 
 class AbilityEditor(ttk.Frame):
     def __init__(self, parent, data_manager):

@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedTk
 from gui.main_window import MainWindow
-from data.data_manager import DataManager
-from utils.config import ensure_directory_exists
-from utils.config import KNIGHT_DIRECTORY, STORAGE_DIRECTORY
+from MAIN.data.data_manager import DataManager
+from MAIN.utils.config import ensure_directory_exists
+from MAIN.utils.config import KNIGHT_DIRECTORY, STORAGE_DIRECTORY
 
 class HomeScreen:
     def __init__(self, master):

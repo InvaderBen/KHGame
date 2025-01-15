@@ -1,11 +1,14 @@
+import sys
+sys.path.append(r"I:\KH_Py\KHGame")
+
 # MAIN/main.py
 import tkinter as tk
 import json
 import os
 import sys
 from HOME.gui.main_window import MainWindow
-from data.data_manager import DataManager
-from FIGHT_SEQ.gui.main_window import FightWindow
+from MAIN.data.data_manager import DataManager
+#from FIGHT_SEQ.gui.main_window import FightWindow
 
 def get_base_dir():
     return os.path.dirname(os.path.abspath(__file__))

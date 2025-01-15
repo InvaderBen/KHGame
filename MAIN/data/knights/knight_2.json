@@ -160,7 +160,25 @@
     }
   },
   "equipment": {
-    "weapons": [],
+    "weapons": [
+      {
+        "type": "weapon",
+        "name": "Longsword",
+        "handling": "two handed",
+        "perks": [
+          "bleeder"
+        ],
+        "strike": 10,
+        "prot": 0,
+        "defense": 10,
+        "speed": -1,
+        "evade": 0,
+        "block": 10,
+        "damage": 10,
+        "critical_condition": "strike roll > 50 defense",
+        "total_damage": 39
+      }
+    ],
     "shields": [],
     "armor": []
   },

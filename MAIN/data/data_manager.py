@@ -1,9 +1,11 @@
 # data/data_manager.py
+import sys
+sys.path.append(r"I:\KH_Py\KHGame")
 import os
 import json
-from HOME.knight import Knight
-from HOME.utils.config import KNIGHT_DIRECTORY, STORAGE_DIRECTORY, EQUIPMENT_CATEGORIES
-from HOME.utils.config import ensure_directory_exists, load_json_file, save_json_file
+from MAIN.data.knight import Knight
+from MAIN.utils.config import KNIGHT_DIRECTORY, STORAGE_DIRECTORY, EQUIPMENT_CATEGORIES
+from MAIN.utils.config import ensure_directory_exists, load_json_file, save_json_file
 
 class DataManager:
     def __init__(self):
